@@ -6,8 +6,23 @@ import time
 import tcod
 import tcod.event
 
+import simpleaudio as sa
+
 CONSOLE_WIDTH = 21
 CONSOLE_HEIGHT = 12
+CHAR_LIMIT = CONSOLE_WIDTH * CONSOLE_HEIGHT
+
+
+def play_character_audio(character):
+    path = f'assets/audio/{character}.wav'
+    wave_obj = sa.WaveObject.from_wave_file(path)
+    return wave_obj.play()
+
+
+def play_hello_audio():
+    path = f'assets/audio/hello.wav'
+    wave_obj = sa.WaveObject.from_wave_file(path)
+    return wave_obj.play()
 
 
 @dataclass
@@ -16,8 +31,10 @@ class Game:
     root_console: tcod.console.Console
     draw_console: tcod.console.Console
     # game state
-    loop_text = ''
-    quit_count = 0
+    loop_text: str = ''
+    quit_count: int = 0
+    # audio context
+    audio: Optional[sa.PlayObject] = None
 
 
 class State(Enum):
@@ -92,6 +109,7 @@ class TitleStateHandler(StateHandler):
         if event.sym == tcod.event.K_ESCAPE:
             self.next_state = None
         else:
+            self.game.audio = play_hello_audio()
             self.next_state = State.LOOP
 
 
@@ -108,7 +126,12 @@ class LoopStateHandler(StateHandler):
         elif event.sym == tcod.event.K_BACKSPACE:
             self.game.loop_text = self.game.loop_text[0:-1]
         elif tcod.event.K_a <= event.sym <= tcod.event.K_z:
-            self.game.loop_text += chr(event.sym)
+            if len(self.game.loop_text) < CHAR_LIMIT:
+                if self.game.audio and self.game.audio.is_playing():
+                    self.game.audio.stop()
+                c = chr(event.sym)
+                self.game.audio = play_character_audio(c)
+                self.game.loop_text += chr(event.sym)
 
     def ev_quit(self, event: tcod.event.Quit) -> None:
         self.next_state = None
@@ -132,7 +155,7 @@ def run_fsm(
 
 
 def main():
-    font_filename = 'Hack_square_64x64.png'
+    font_filename = 'assets/Hack_square_64x64.png'
     font_flags = tcod.FONT_LAYOUT_CP437 | tcod.FONT_TYPE_GREYSCALE
     tcod.console_set_custom_font(font_filename, font_flags)
     with tcod.console_init_root(
