@@ -9,3 +9,5 @@ pyenv activate coliemacs-3.8.2
 pip install -r requirements
 python coliemacs.py
 ```
+
+You have to hit `Esc` 10 times consecutively to exit the game.
