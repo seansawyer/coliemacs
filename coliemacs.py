@@ -56,7 +56,7 @@ def blit_and_flush(
 
 def draw_title(game: Game) -> None:
     game.draw_console.clear()
-    game.draw_console.print(0, 0, 'Hello!')
+    game.draw_console.print(0, 0, 'Hello!', fg=tcod.pink)
 
 
 def draw_loop(game: Game) -> None:
@@ -64,7 +64,7 @@ def draw_loop(game: Game) -> None:
     y = 0
     for i in range(0, len(game.loop_text), CONSOLE_WIDTH):
         line = game.loop_text[i:i+CONSOLE_WIDTH]
-        game.draw_console.print(0, y, line.upper())
+        game.draw_console.print(0, y, line.upper(), fg=tcod.pink)
         y += 1
 
 
@@ -166,12 +166,14 @@ def main():
             title='ColiEmacs',
             vsync=True
     ) as root_console:
+        root_console.default_bg = tcod.purple
         tcod.console_set_fullscreen(True)
         draw_console = tcod.console.Console(
             CONSOLE_WIDTH,
             CONSOLE_HEIGHT,
             order='F'
         )
+        draw_console.default_bg = tcod.darkest_violet
         my_state_handlers = {
             State.TITLE: TitleStateHandler,
             State.LOOP: LoopStateHandler,
